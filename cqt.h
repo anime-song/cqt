@@ -17,8 +17,7 @@ namespace CQT {
 	int hanning(float*& x, int M);
 	int hamming(float*& x, int M);
 
-	static std::unordered_map<const char*, std::function<int(float*&, int)>> winMap;
-	std::function<int(float*&, int)> getWindow(const char* name);
+	std::function<int(float*&, int)> getWindow(std::string name);
 
 	int cqtFrequencies(
 		float*& freqs,
@@ -38,11 +37,11 @@ namespace CQT {
 
 	std::vector<std::vector<float>> cqt(
 		const std::vector<float>& y,
-		const char* window = "hanning",
+		std::string window = "hanning",
 		const int sr = 22050,
 		const int n_bins = 12 * 3 * 7,
 		const int bins_per_octave = 12 * 3,
-		const int bins_per_second = 40,
+		const int samples_per_second = 40,
 		float fmin = 32.703f,
 		const float Qfactor = 20.0f,
 		const float tuning = 0.0f);

@@ -1,4 +1,4 @@
-﻿#include "cqt.h"
+#include "cqt.h"
 
 namespace Math {
 	template<typename T>
@@ -17,7 +17,7 @@ namespace Math {
 
 namespace CQT {
 
-	std::unordered_map<const char*, std::function<int(float*&, int)>> winMap = {
+	std::unordered_map<std::string, std::function<int(float*&, int)>> winMap = {
 		{"hann", hanning},
 		{"hanning", hanning},
 		{"hamm", hamming},
@@ -44,9 +44,9 @@ namespace CQT {
 	}
 
 
-	std::function<int(float*&, int)> getWindow(const char* name)
+	std::function<int(float*&, int)> getWindow(std::string name)
 	{
-		return winMap[name];
+		return winMap.at(name);
 	}
 
 	/**
@@ -148,18 +148,18 @@ namespace CQT {
 	*/
 	std::vector<std::vector<float>> cqt(
 		const std::vector<float>& y,
-		char const* window,
+		std::string window,
 		const int sr,
 		const int n_bins,
 		const int bins_per_octave,
-		const int bins_per_second,
+		const int samples_per_second,
 		float fmin,
 		const float Qfactor,
 		const float tuning)
 	{
 
 		// HOP長を計算
-		int hopLength = (int)round((1.0 / bins_per_second) * sr);
+		int hopLength = (int)round((1.0 / samples_per_second) * sr);
 
 		// 最小周波数をチューニングに合わせる
 		fmin = fmin * pow(2.0f, (tuning / bins_per_octave));
@@ -194,13 +194,11 @@ namespace CQT {
 			int nsample = (int)round((sr * Q) / freqs[k]);
 			int hsample = nsample / 2;
 
-			for (int i = 0; i < nframe; ++i) {
+			for (int f = 0; f < nframe; ++f) {
 				// スライス位置を計算
-				int istart = i * hopLength - hsample;
-				int iend = istart + nsample;
+				int istart = f * hopLength - hsample;
 				// 音声スライス位置
 				int ystart = Math::Clamp(istart, 0, ylengths);
-				int yend = Math::Clamp(iend, 0, ylengths);
 				// 重みスライス位置
 				int winstart = Math::Clamp(ystart - istart, 0, nsample);
 				int winend = Math::Clamp(ylengths - istart, 0, nsample);
@@ -218,7 +216,7 @@ namespace CQT {
 				// サンプル数で割る
 				sumSin /= nsample;
 				sumCos /= nsample;
-				ret[k][i] = std::sqrt(sumCos * sumCos + sumSin * sumSin);
+				ret[k][f] = std::sqrt(sumCos * sumCos + sumSin * sumSin);
 			}
 		}
 
